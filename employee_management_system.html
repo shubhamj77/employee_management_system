@@ -1,0 +1,632 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Employee Management System</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --surface: #181c27;
+    --surface2: #1e2433;
+    --border: #2a3045;
+    --accent: #4f8ef7;
+    --accent2: #7c5cfc;
+    --green: #2dd4a0;
+    --red: #f75f5f;
+    --amber: #f5a623;
+    --text: #e8ecf4;
+    --muted: #6b7899;
+    --muted2: #8a96b8;
+    --badge-sales: #1e3a2a; --badge-sales-t: #2dd4a0;
+    --badge-it: #1a2e4a; --badge-it-t: #4f8ef7;
+    --badge-hr: #2e1e3a; --badge-hr-t: #b06ef7;
+    --badge-fin: #3a2e1a; --badge-fin-t: #f5a623;
+    --badge-mkt: #3a1e2a; --badge-mkt-t: #f75f9f;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
+
+  /* Layout */
+  .app { display: flex; flex-direction: column; min-height: 100vh; }
+  header { background: var(--surface); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 60px; position: sticky; top: 0; z-index: 100; }
+  .logo { font-size: 16px; font-weight: 600; letter-spacing: -0.3px; display: flex; align-items: center; gap: 10px; }
+  .logo-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--accent); }
+  .header-stats { display: flex; gap: 24px; }
+  .hstat { text-align: right; }
+  .hstat-val { font-size: 15px; font-weight: 600; color: var(--text); font-family: 'DM Mono', monospace; }
+  .hstat-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; }
+
+  main { display: grid; grid-template-columns: 260px 1fr; flex: 1; gap: 0; }
+
+  /* Sidebar */
+  aside { background: var(--surface); border-right: 1px solid var(--border); padding: 1.5rem 1rem; display: flex; flex-direction: column; gap: 6px; }
+  .nav-label { font-size: 10px; text-transform: uppercase; letter-spacing: 1px; color: var(--muted); padding: 0 8px; margin: 12px 0 4px; }
+  .nav-btn { display: flex; align-items: center; gap: 10px; padding: 9px 12px; border-radius: 8px; border: none; background: transparent; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 13.5px; cursor: pointer; width: 100%; text-align: left; transition: all 0.15s; }
+  .nav-btn:hover { background: var(--surface2); color: var(--text); }
+  .nav-btn.active { background: rgba(79,142,247,0.12); color: var(--accent); }
+  .nav-icon { font-size: 16px; width: 20px; text-align: center; }
+  .dept-badge { margin-left: auto; font-size: 11px; font-family: 'DM Mono', monospace; background: var(--surface2); padding: 2px 7px; border-radius: 20px; color: var(--muted); }
+
+  /* Content area */
+  .content { padding: 1.5rem 2rem; overflow: auto; }
+
+  /* Stats cards */
+  .stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .stat-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.1rem 1.25rem; }
+  .stat-label { font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); margin-bottom: 6px; }
+  .stat-value { font-size: 22px; font-weight: 600; font-family: 'DM Mono', monospace; }
+  .stat-sub { font-size: 12px; color: var(--muted); margin-top: 3px; }
+  .stat-card.blue .stat-value { color: var(--accent); }
+  .stat-card.green .stat-value { color: var(--green); }
+  .stat-card.purple .stat-value { color: #b06ef7; }
+  .stat-card.amber .stat-value { color: var(--amber); }
+
+  /* Toolbar */
+  .toolbar { display: flex; gap: 10px; margin-bottom: 1rem; align-items: center; }
+  .search-wrap { flex: 1; position: relative; }
+  .search-wrap input { width: 100%; background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px 9px 36px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13.5px; outline: none; transition: border 0.15s; }
+  .search-wrap input:focus { border-color: var(--accent); }
+  .search-icon { position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--muted); font-size: 14px; }
+  select { background: var(--surface); border: 1px solid var(--border); border-radius: 8px; padding: 9px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 13px; outline: none; cursor: pointer; }
+  select:focus { border-color: var(--accent); }
+  .btn { padding: 9px 16px; border-radius: 8px; border: none; font-family: 'DM Sans', sans-serif; font-size: 13px; font-weight: 500; cursor: pointer; transition: all 0.15s; display: flex; align-items: center; gap: 6px; white-space: nowrap; }
+  .btn-primary { background: var(--accent); color: #fff; }
+  .btn-primary:hover { background: #3a7de8; }
+  .btn-ghost { background: var(--surface); border: 1px solid var(--border); color: var(--muted2); }
+  .btn-ghost:hover { border-color: var(--accent); color: var(--accent); }
+  .btn-danger { background: rgba(247,95,95,0.12); border: 1px solid rgba(247,95,95,0.2); color: var(--red); }
+  .btn-danger:hover { background: rgba(247,95,95,0.2); }
+
+  /* Table */
+  .table-wrap { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; overflow: hidden; }
+  table { width: 100%; border-collapse: collapse; }
+  thead { background: var(--surface2); }
+  th { padding: 10px 16px; text-align: left; font-size: 11px; text-transform: uppercase; letter-spacing: 0.8px; color: var(--muted); font-weight: 500; cursor: pointer; user-select: none; white-space: nowrap; }
+  th:hover { color: var(--text); }
+  th .sort-icon { margin-left: 4px; opacity: 0.4; }
+  th.sorted .sort-icon { opacity: 1; color: var(--accent); }
+  td { padding: 11px 16px; font-size: 13.5px; border-top: 1px solid var(--border); vertical-align: middle; }
+  tr:hover td { background: rgba(255,255,255,0.02); }
+  .emp-id { font-family: 'DM Mono', monospace; font-size: 12px; color: var(--muted); }
+  .emp-name { font-weight: 500; }
+  .emp-age { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--muted2); }
+  .salary { font-family: 'DM Mono', monospace; font-size: 13px; color: var(--green); }
+  .dept-tag { display: inline-flex; align-items: center; padding: 3px 10px; border-radius: 20px; font-size: 11.5px; font-weight: 500; }
+  .dept-Sales { background: var(--badge-sales); color: var(--badge-sales-t); }
+  .dept-IT { background: var(--badge-it); color: var(--badge-it-t); }
+  .dept-HR { background: var(--badge-hr); color: var(--badge-hr-t); }
+  .dept-Finance { background: var(--badge-fin); color: var(--badge-fin-t); }
+  .dept-Marketing { background: var(--badge-mkt); color: var(--badge-mkt-t); }
+
+  .action-btns { display: flex; gap: 6px; }
+  .icon-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 8px; cursor: pointer; font-size: 13px; color: var(--muted); transition: all 0.15s; }
+  .icon-btn:hover { border-color: var(--accent); color: var(--accent); }
+  .icon-btn.del:hover { border-color: var(--red); color: var(--red); }
+
+  /* Pagination */
+  .pagination { display: flex; align-items: center; justify-content: space-between; padding: 12px 16px; border-top: 1px solid var(--border); font-size: 13px; color: var(--muted); }
+  .page-btns { display: flex; gap: 4px; }
+  .page-btn { background: none; border: 1px solid var(--border); border-radius: 6px; padding: 5px 10px; color: var(--muted2); font-family: 'DM Sans', sans-serif; font-size: 12px; cursor: pointer; transition: all 0.15s; }
+  .page-btn:hover, .page-btn.active { background: rgba(79,142,247,0.12); border-color: var(--accent); color: var(--accent); }
+  .page-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+
+  /* Modal */
+  .modal-overlay { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.7); z-index: 200; align-items: center; justify-content: center; }
+  .modal-overlay.open { display: flex; }
+  .modal { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; width: 440px; max-width: 95vw; padding: 2rem; }
+  .modal-title { font-size: 17px; font-weight: 600; margin-bottom: 1.5rem; display: flex; justify-content: space-between; align-items: center; }
+  .modal-close { background: none; border: none; color: var(--muted); cursor: pointer; font-size: 20px; line-height: 1; }
+  .form-row { margin-bottom: 1rem; }
+  .form-label { font-size: 12px; text-transform: uppercase; letter-spacing: 0.6px; color: var(--muted); margin-bottom: 6px; display: block; }
+  .form-input { width: 100%; background: var(--surface2); border: 1px solid var(--border); border-radius: 8px; padding: 10px 12px; color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; outline: none; transition: border 0.15s; }
+  .form-input:focus { border-color: var(--accent); }
+  .form-row-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .form-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 1.5rem; }
+  .error-msg { font-size: 11px; color: var(--red); margin-top: 4px; display: none; }
+
+  /* Toast */
+  .toast { position: fixed; bottom: 24px; right: 24px; background: var(--surface2); border: 1px solid var(--border); border-radius: 10px; padding: 12px 18px; font-size: 13.5px; color: var(--text); z-index: 300; display: flex; align-items: center; gap: 10px; transform: translateY(100px); opacity: 0; transition: all 0.3s; max-width: 320px; }
+  .toast.show { transform: translateY(0); opacity: 1; }
+  .toast.success .toast-dot { background: var(--green); }
+  .toast.error .toast-dot { background: var(--red); }
+  .toast-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+
+  /* Empty */
+  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
+  .empty-state .icon { font-size: 40px; margin-bottom: 1rem; }
+  .empty-state p { font-size: 14px; }
+
+  /* View: Analytics */
+  .analytics-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .chart-card { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; padding: 1.25rem; }
+  .chart-title { font-size: 13px; font-weight: 500; color: var(--muted2); margin-bottom: 1rem; }
+  .bar-group { display: flex; flex-direction: column; gap: 10px; }
+  .bar-row { display: flex; align-items: center; gap: 10px; }
+  .bar-label { font-size: 12px; color: var(--muted2); width: 80px; flex-shrink: 0; }
+  .bar-track { flex: 1; background: var(--surface2); border-radius: 4px; height: 8px; overflow: hidden; }
+  .bar-fill { height: 100%; border-radius: 4px; transition: width 0.6s; }
+  .bar-val { font-size: 12px; color: var(--muted); font-family: 'DM Mono', monospace; width: 70px; text-align: right; flex-shrink: 0; }
+
+  /* Responsive */
+  @media(max-width: 900px) {
+    main { grid-template-columns: 1fr; }
+    aside { display: none; }
+    .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    .analytics-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <div class="logo">
+      <span class="logo-dot"></span>
+      EMS — Employee Management System
+    </div>
+    <div class="header-stats">
+      <div class="hstat">
+        <div class="hstat-val" id="hTotal">500</div>
+        <div class="hstat-label">Total</div>
+      </div>
+      <div class="hstat">
+        <div class="hstat-val" id="hAvgSal">—</div>
+        <div class="hstat-label">Avg Salary</div>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <aside>
+      <div class="nav-label">Views</div>
+      <button class="nav-btn active" onclick="switchView('employees')" id="nav-employees">
+        <span class="nav-icon">👥</span> All Employees
+        <span class="dept-badge" id="sideTotal">500</span>
+      </button>
+      <button class="nav-btn" onclick="switchView('analytics')" id="nav-analytics">
+        <span class="nav-icon">📊</span> Analytics
+      </button>
+
+      <div class="nav-label">Filter by Dept</div>
+      <button class="nav-btn" onclick="filterByDept('')" id="dept-All">
+        <span class="nav-icon">🏢</span> All Departments
+      </button>
+      <button class="nav-btn" onclick="filterByDept('IT')" id="dept-IT">
+        <span class="nav-icon">💻</span> IT
+        <span class="dept-badge" id="cnt-IT">—</span>
+      </button>
+      <button class="nav-btn" onclick="filterByDept('Sales')" id="dept-Sales">
+        <span class="nav-icon">📈</span> Sales
+        <span class="dept-badge" id="cnt-Sales">—</span>
+      </button>
+      <button class="nav-btn" onclick="filterByDept('HR')" id="dept-HR">
+        <span class="nav-icon">🤝</span> HR
+        <span class="dept-badge" id="cnt-HR">—</span>
+      </button>
+      <button class="nav-btn" onclick="filterByDept('Finance')" id="dept-Finance">
+        <span class="nav-icon">💰</span> Finance
+        <span class="dept-badge" id="cnt-Finance">—</span>
+      </button>
+      <button class="nav-btn" onclick="filterByDept('Marketing')" id="dept-Marketing">
+        <span class="nav-icon">📣</span> Marketing
+        <span class="dept-badge" id="cnt-Marketing">—</span>
+      </button>
+    </aside>
+
+    <div class="content" id="mainContent">
+      <!-- Injected by JS -->
+    </div>
+  </main>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="empModal">
+  <div class="modal">
+    <div class="modal-title">
+      <span id="modalTitle">Add Employee</span>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Employee ID</label>
+      <input class="form-input" id="fId" type="number" placeholder="Auto-generated" />
+      <div class="error-msg" id="errId">ID already exists</div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Full Name</label>
+      <input class="form-input" id="fName" placeholder="e.g. Priya Kumar" />
+      <div class="error-msg" id="errName">Name is required</div>
+    </div>
+    <div class="form-row-2">
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Age</label>
+        <input class="form-input" id="fAge" type="number" min="18" max="65" placeholder="22–60" />
+        <div class="error-msg" id="errAge">Age must be 18–65</div>
+      </div>
+      <div class="form-row" style="margin:0">
+        <label class="form-label">Department</label>
+        <select class="form-input" id="fDept">
+          <option value="">Select...</option>
+          <option>IT</option><option>Sales</option><option>HR</option>
+          <option>Finance</option><option>Marketing</option>
+        </select>
+        <div class="error-msg" id="errDept">Select a department</div>
+      </div>
+    </div>
+    <div class="form-row" style="margin-top:12px">
+      <label class="form-label">Salary (₹)</label>
+      <input class="form-input" id="fSalary" type="number" min="10000" placeholder="e.g. 45000" />
+      <div class="error-msg" id="errSal">Enter a valid salary</div>
+    </div>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="modalSaveBtn" onclick="saveEmployee()">Save Employee</button>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirm Modal -->
+<div class="modal-overlay" id="delModal">
+  <div class="modal" style="max-width:380px">
+    <div class="modal-title">Confirm Delete</div>
+    <p style="color:var(--muted2);font-size:14px;margin-bottom:1.5rem">This will permanently remove <strong id="delName" style="color:var(--text)"></strong> (ID: <span id="delId" style="font-family:'DM Mono',monospace"></span>) from records.</p>
+    <div class="form-actions">
+      <button class="btn btn-ghost" onclick="closeDelModal()">Cancel</button>
+      <button class="btn btn-danger" onclick="confirmDelete()">Delete</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div class="toast" id="toast">
+  <span class="toast-dot"></span>
+  <span id="toastMsg"></span>
+</div>
+
+<script>
+const RAW_DATA = [{"id":101,"name":"Anjali Kumar","age":25,"department":"Sales","salary":30676},{"id":102,"name":"Sonal Singh","age":27,"department":"Marketing","salary":47267},{"id":103,"name":"Tanvi Yadav","age":30,"department":"Marketing","salary":51293},{"id":104,"name":"Arjun Gupta","age":39,"department":"IT","salary":51762},{"id":105,"name":"Neha Jain","age":34,"department":"HR","salary":47959},{"id":106,"name":"Ritika Reddy","age":28,"department":"Marketing","salary":24313},{"id":107,"name":"Abhishek Gupta","age":24,"department":"Finance","salary":21134},{"id":108,"name":"Kajal Kapoor","age":31,"department":"Marketing","salary":32944},{"id":109,"name":"Sandeep Mehta","age":31,"department":"Sales","salary":46860},{"id":110,"name":"Rohit Mehta","age":34,"department":"HR","salary":37967},{"id":111,"name":"Sonal Gupta","age":31,"department":"IT","salary":55466},{"id":112,"name":"Priya Yadav","age":37,"department":"Finance","salary":26930},{"id":113,"name":"Nisha Kapoor","age":23,"department":"Sales","salary":21969},{"id":114,"name":"Payal Sharma","age":24,"department":"Finance","salary":34834},{"id":115,"name":"Rajesh Mehta","age":34,"department":"Sales","salary":41590},{"id":116,"name":"Rajesh Yadav","age":23,"department":"Finance","salary":32614},{"id":117,"name":"Vikas Jain","age":22,"department":"Finance","salary":28639},{"id":118,"name":"Karan Jain","age":25,"department":"IT","salary":36141},{"id":119,"name":"Aditya Jain","age":39,"department":"HR","salary":54206},{"id":120,"name":"Abhishek Singh","age":26,"department":"Finance","salary":42249},{"id":121,"name":"Vikas Mehta","age":37,"department":"Finance","salary":46760},{"id":122,"name":"Neha Reddy","age":38,"department":"Marketing","salary":27851},{"id":123,"name":"Rajesh Sharma","age":29,"department":"HR","salary":41141},{"id":124,"name":"Ravi Jain","age":28,"department":"IT","salary":41921},{"id":125,"name":"Rajesh Jain","age":29,"department":"Sales","salary":56705},{"id":126,"name":"Meena Jain","age":39,"department":"Marketing","salary":25028},{"id":127,"name":"Priya Kumar","age":31,"department":"HR","salary":46819},{"id":128,"name":"Rahul Mehta","age":29,"department":"Marketing","salary":30974},{"id":129,"name":"Sandeep Reddy","age":33,"department":"HR","salary":51408},{"id":130,"name":"Rahul Yadav","age":23,"department":"Sales","salary":47690},{"id":131,"name":"Aman Jain","age":31,"department":"Marketing","salary":27905},{"id":132,"name":"Sneha Kumar","age":37,"department":"IT","salary":44398},{"id":133,"name":"Sneha Gupta","age":29,"department":"Sales","salary":37283},{"id":134,"name":"Sonal Verma","age":38,"department":"Sales","salary":47833},{"id":135,"name":"Rahul Mehta","age":23,"department":"Finance","salary":44347},{"id":136,"name":"Komal Yadav","age":28,"department":"Marketing","salary":26771},{"id":137,"name":"Rajesh Gupta","age":23,"department":"Sales","salary":50362},{"id":138,"name":"Rajesh Mehta","age":35,"department":"Marketing","salary":51320},{"id":139,"name":"Rahul Yadav","age":38,"department":"Finance","salary":47522},{"id":140,"name":"Rohit Singh","age":35,"department":"Sales","salary":22828},{"id":141,"name":"Sneha Jain","age":32,"department":"IT","salary":59120},{"id":142,"name":"Meena Kapoor","age":30,"department":"IT","salary":43066},{"id":143,"name":"Varun Yadav","age":36,"department":"HR","salary":52632},{"id":144,"name":"Sneha Jain","age":34,"department":"Finance","salary":59261},{"id":145,"name":"Manish Gupta","age":32,"department":"Marketing","salary":20997},{"id":146,"name":"Simran Verma","age":40,"department":"Marketing","salary":42810},{"id":147,"name":"Rahul Gupta","age":39,"department":"Sales","salary":20527},{"id":148,"name":"Aditya Sharma","age":35,"department":"Sales","salary":58498},{"id":149,"name":"Meena Reddy","age":34,"department":"Sales","salary":52201},{"id":150,"name":"Manish Gupta","age":22,"department":"Marketing","salary":35472},{"id":151,"name":"Ritika Sharma","age":30,"department":"HR","salary":40341},{"id":152,"name":"Ritika Kapoor","age":39,"department":"Marketing","salary":39237},{"id":153,"name":"Sonal Reddy","age":37,"department":"HR","salary":25669},{"id":154,"name":"Divya Kapoor","age":33,"department":"Sales","salary":28444},{"id":155,"name":"Sneha Singh","age":27,"department":"Marketing","salary":54656},{"id":156,"name":"Sonal Singh","age":24,"department":"IT","salary":23693},{"id":157,"name":"Anjali Mehta","age":28,"department":"Finance","salary":43242},{"id":158,"name":"Divya Verma","age":26,"department":"HR","salary":27117},{"id":159,"name":"Neha Verma","age":22,"department":"IT","salary":49160},{"id":160,"name":"Rajesh Kapoor","age":36,"department":"HR","salary":59580},{"id":161,"name":"Varun Mehta","age":36,"department":"IT","salary":36961},{"id":162,"name":"Neha Kapoor","age":27,"department":"Marketing","salary":49761},{"id":163,"name":"Rahul Kumar","age":40,"department":"Sales","salary":21909},{"id":164,"name":"Rohit Singh","age":33,"department":"HR","salary":25123},{"id":165,"name":"Karan Kumar","age":38,"department":"Marketing","salary":40272},{"id":166,"name":"Ashish Verma","age":30,"department":"Finance","salary":31254},{"id":167,"name":"Deepak Yadav","age":27,"department":"Sales","salary":22835},{"id":168,"name":"Payal Kumar","age":39,"department":"HR","salary":50864},{"id":169,"name":"Sneha Kumar","age":27,"department":"Sales","salary":53247},{"id":170,"name":"Sandeep Mehta","age":28,"department":"Finance","salary":49479},{"id":171,"name":"Ritika Singh","age":23,"department":"Marketing","salary":34447},{"id":172,"name":"Ritika Verma","age":33,"department":"Finance","salary":59743},{"id":173,"name":"Rahul Gupta","age":24,"department":"HR","salary":34007},{"id":174,"name":"Ritika Singh","age":38,"department":"Sales","salary":39790},{"id":175,"name":"Sneha Reddy","age":38,"department":"HR","salary":37855},{"id":176,"name":"Ravi Reddy","age":26,"department":"IT","salary":45748},{"id":177,"name":"Tanvi Kumar","age":25,"department":"Marketing","salary":52318},{"id":178,"name":"Anjali Yadav","age":28,"department":"Finance","salary":47243},{"id":179,"name":"Rahul Reddy","age":26,"department":"HR","salary":50151},{"id":180,"name":"Anjali Kumar","age":24,"department":"HR","salary":38949},{"id":181,"name":"Anjali Yadav","age":29,"department":"HR","salary":50566},{"id":182,"name":"Rohit Verma","age":26,"department":"Marketing","salary":30197},{"id":183,"name":"Priya Singh","age":37,"department":"Marketing","salary":39515},{"id":184,"name":"Payal Sharma","age":29,"department":"Finance","salary":43008},{"id":185,"name":"Rajesh Sharma","age":22,"department":"Marketing","salary":21395},{"id":186,"name":"Nisha Mehta","age":24,"department":"HR","salary":34962},{"id":187,"name":"Sandeep Mehta","age":23,"department":"Marketing","salary":54718},{"id":188,"name":"Payal Yadav","age":24,"department":"Finance","salary":20002},{"id":189,"name":"Kajal Singh","age":26,"department":"IT","salary":46510},{"id":190,"name":"Pooja Yadav","age":26,"department":"HR","salary":44538},{"id":191,"name":"Ashish Sharma","age":38,"department":"IT","salary":38807},{"id":192,"name":"Komal Mehta","age":30,"department":"Sales","salary":53255},{"id":193,"name":"Divya Singh","age":31,"department":"IT","salary":34288},{"id":194,"name":"Payal Yadav","age":27,"department":"Sales","salary":59366},{"id":195,"name":"Abhishek Reddy","age":28,"department":"HR","salary":29514},{"id":196,"name":"Rohit Yadav","age":26,"department":"HR","salary":51296},{"id":197,"name":"Kajal Verma","age":35,"department":"Sales","salary":36466},{"id":198,"name":"Ritika Singh","age":40,"department":"HR","salary":40359},{"id":199,"name":"Pooja Kapoor","age":40,"department":"Finance","salary":52101},{"id":200,"name":"Sonal Kapoor","age":31,"department":"Finance","salary":43917},{"id":201,"name":"Abhishek Singh","age":39,"department":"Finance","salary":53929},{"id":202,"name":"Nisha Gupta","age":38,"department":"Finance","salary":41186},{"id":203,"name":"Aditya Jain","age":23,"department":"Marketing","salary":54255},{"id":204,"name":"Pooja Reddy","age":22,"department":"Finance","salary":58658},{"id":205,"name":"Abhishek Kumar","age":22,"department":"HR","salary":44788},{"id":206,"name":"Sandeep Singh","age":36,"department":"HR","salary":48870},{"id":207,"name":"Vikas Singh","age":34,"department":"Marketing","salary":51465},{"id":208,"name":"Ritika Gupta","age":31,"department":"IT","salary":39153},{"id":209,"name":"Nisha Gupta","age":35,"department":"Marketing","salary":55797},{"id":210,"name":"Rohit Verma","age":27,"department":"IT","salary":47376},{"id":211,"name":"Kajal Singh","age":25,"department":"HR","salary":36653},{"id":212,"name":"Anjali Kumar","age":35,"department":"Finance","salary":28605},{"id":213,"name":"Vikas Kapoor","age":35,"department":"Sales","salary":36841},{"id":214,"name":"Ravi Kapoor","age":23,"department":"Finance","salary":41788},{"id":215,"name":"Rahul Yadav","age":26,"department":"Marketing","salary":36026},{"id":216,"name":"Sneha Sharma","age":29,"department":"Sales","salary":34361},{"id":217,"name":"Meena Kapoor","age":37,"department":"Sales","salary":59475},{"id":218,"name":"Aditya Sharma","age":37,"department":"Marketing","salary":30069},{"id":219,"name":"Tanvi Verma","age":27,"department":"Marketing","salary":48702},{"id":220,"name":"Priya Gupta","age":34,"department":"Finance","salary":24704},{"id":221,"name":"Aman Singh","age":32,"department":"IT","salary":33066},{"id":222,"name":"Rahul Mehta","age":22,"department":"HR","salary":22069},{"id":223,"name":"Neha Kapoor","age":22,"department":"HR","salary":26642},{"id":224,"name":"Rohit Reddy","age":22,"department":"IT","salary":36641},{"id":225,"name":"Tanvi Jain","age":38,"department":"HR","salary":50046},{"id":226,"name":"Nisha Jain","age":32,"department":"IT","salary":49031},{"id":227,"name":"Ashish Singh","age":26,"department":"Sales","salary":30157},{"id":228,"name":"Rahul Yadav","age":29,"department":"Finance","salary":33277},{"id":229,"name":"Rajesh Jain","age":23,"department":"IT","salary":23530},{"id":230,"name":"Ritika Mehta","age":27,"department":"HR","salary":24961},{"id":231,"name":"Ravi Jain","age":28,"department":"HR","salary":23869},{"id":232,"name":"Abhishek Kumar","age":32,"department":"IT","salary":58198},{"id":233,"name":"Sneha Yadav","age":37,"department":"IT","salary":28092},{"id":234,"name":"Manish Gupta","age":25,"department":"Marketing","salary":45946},{"id":235,"name":"Anjali Gupta","age":28,"department":"HR","salary":20603},{"id":236,"name":"Karan Mehta","age":34,"department":"Marketing","salary":21357},{"id":237,"name":"Sandeep Jain","age":24,"department":"HR","salary":35329},{"id":238,"name":"Rahul Gupta","age":23,"department":"Finance","salary":46206},{"id":239,"name":"Ritika Singh","age":39,"department":"HR","salary":30945},{"id":240,"name":"Rohit Yadav","age":23,"department":"Marketing","salary":50547},{"id":241,"name":"Sonal Mehta","age":23,"department":"Finance","salary":58925},{"id":242,"name":"Vikas Jain","age":25,"department":"Finance","salary":28956},{"id":243,"name":"Meena Kapoor","age":27,"department":"Finance","salary":33762},{"id":244,"name":"Simran Sharma","age":35,"department":"HR","salary":46755},{"id":245,"name":"Rahul Kapoor","age":29,"department":"IT","salary":37659},{"id":246,"name":"Sonal Mehta","age":37,"department":"IT","salary":24012},{"id":247,"name":"Kajal Singh","age":38,"department":"IT","salary":45581},{"id":248,"name":"Varun Sharma","age":31,"department":"Finance","salary":41175},{"id":249,"name":"Ravi Jain","age":40,"department":"IT","salary":25994},{"id":250,"name":"Sonal Mehta","age":23,"department":"HR","salary":38673},{"id":251,"name":"Simran Yadav","age":40,"department":"Sales","salary":52346},{"id":252,"name":"Komal Jain","age":31,"department":"Sales","salary":27901},{"id":253,"name":"Deepak Kumar","age":27,"department":"Marketing","salary":33620},{"id":254,"name":"Aditya Sharma","age":40,"department":"Marketing","salary":47902},{"id":255,"name":"Varun Jain","age":38,"department":"Finance","salary":22005},{"id":256,"name":"Varun Kumar","age":29,"department":"Sales","salary":39341},{"id":257,"name":"Ashish Singh","age":34,"department":"IT","salary":36301},{"id":258,"name":"Tanvi Yadav","age":23,"department":"HR","salary":20274},{"id":259,"name":"Neha Jain","age":39,"department":"Sales","salary":31160},{"id":260,"name":"Tanvi Mehta","age":39,"department":"HR","salary":21703},{"id":261,"name":"Anjali Verma","age":40,"department":"Marketing","salary":44019},{"id":262,"name":"Vikas Yadav","age":24,"department":"IT","salary":32625},{"id":263,"name":"Sonal Kumar","age":32,"department":"Marketing","salary":28765},{"id":264,"name":"Arjun Verma","age":31,"department":"Finance","salary":59897},{"id":265,"name":"Kajal Yadav","age":30,"department":"Finance","salary":49194},{"id":266,"name":"Ravi Verma","age":37,"department":"Sales","salary":39434},{"id":267,"name":"Deepak Jain","age":27,"department":"Marketing","salary":43243},{"id":268,"name":"Nisha Mehta","age":37,"department":"Sales","salary":55847},{"id":269,"name":"Karan Yadav","age":40,"department":"IT","salary":52300},{"id":270,"name":"Ravi Kumar","age":34,"department":"IT","salary":35525},{"id":271,"name":"Sandeep Kumar","age":28,"department":"Marketing","salary":26053},{"id":272,"name":"Payal Kapoor","age":22,"department":"Marketing","salary":27836},{"id":273,"name":"Divya Jain","age":40,"department":"Finance","salary":20165},{"id":274,"name":"Tanvi Kumar","age":38,"department":"HR","salary":34983},{"id":275,"name":"Deepak Kumar","age":22,"department":"Finance","salary":29521},{"id":276,"name":"Anjali Yadav","age":32,"department":"HR","salary":53709},{"id":277,"name":"Sonal Kumar","age":32,"department":"Sales","salary":51349},{"id":278,"name":"Divya Singh","age":24,"department":"Finance","salary":35311},{"id":279,"name":"Sneha Reddy","age":29,"department":"IT","salary":32698},{"id":280,"name":"Vikas Singh","age":23,"department":"IT","salary":42043},{"id":281,"name":"Varun Kapoor","age":26,"department":"IT","salary":57571},{"id":282,"name":"Ravi Mehta","age":40,"department":"IT","salary":53158},{"id":283,"name":"Payal Verma","age":23,"department":"Finance","salary":37107},{"id":284,"name":"Ritika Jain","age":36,"department":"Marketing","salary":45029},{"id":285,"name":"Komal Verma","age":35,"department":"Finance","salary":45727},{"id":286,"name":"Neha Yadav","age":29,"department":"Finance","salary":49780},{"id":287,"name":"Payal Singh","age":33,"department":"Finance","salary":30397},{"id":288,"name":"Sonal Mehta","age":38,"department":"Finance","salary":44017},{"id":289,"name":"Sonal Yadav","age":31,"department":"Sales","salary":36614},{"id":290,"name":"Vikas Sharma","age":28,"department":"Marketing","salary":40028},{"id":291,"name":"Manish Yadav","age":26,"department":"IT","salary":45253},{"id":292,"name":"Ritika Reddy","age":40,"department":"IT","salary":25724},{"id":293,"name":"Varun Yadav","age":38,"department":"IT","salary":52108},{"id":294,"name":"Anjali Yadav","age":35,"department":"Finance","salary":30641},{"id":295,"name":"Aditya Singh","age":39,"department":"HR","salary":30931},{"id":296,"name":"Tanvi Verma","age":26,"department":"Finance","salary":56532},{"id":297,"name":"Manish Mehta","age":28,"department":"Marketing","salary":24895},{"id":298,"name":"Ravi Singh","age":25,"department":"HR","salary":24261},{"id":299,"name":"Meena Mehta","age":32,"department":"Finance","salary":54977},{"id":300,"name":"Aditya Sharma","age":34,"department":"Finance","salary":58921},{"id":301,"name":"Deepak Reddy","age":26,"department":"Finance","salary":54538},{"id":302,"name":"Deepak Verma","age":33,"department":"HR","salary":22493},{"id":303,"name":"Karan Singh","age":22,"department":"HR","salary":27330},{"id":304,"name":"Ravi Kumar","age":31,"department":"Marketing","salary":46836},{"id":305,"name":"Rahul Mehta","age":40,"department":"Finance","salary":41244},{"id":306,"name":"Sneha Kapoor","age":24,"department":"Sales","salary":33318},{"id":307,"name":"Sneha Jain","age":23,"department":"Marketing","salary":55435},{"id":308,"name":"Rajesh Mehta","age":36,"department":"HR","salary":24461},{"id":309,"name":"Divya Sharma","age":28,"department":"Sales","salary":44713},{"id":310,"name":"Ravi Verma","age":38,"department":"HR","salary":56995},{"id":311,"name":"Neha Mehta","age":29,"department":"Marketing","salary":53106},{"id":312,"name":"Aman Mehta","age":24,"department":"Sales","salary":33949},{"id":313,"name":"Vikas Gupta","age":35,"department":"Sales","salary":46696},{"id":314,"name":"Aditya Kumar","age":27,"department":"Sales","salary":36208},{"id":315,"name":"Pooja Reddy","age":22,"department":"HR","salary":57698},{"id":316,"name":"Tanvi Verma","age":28,"department":"IT","salary":33510},{"id":317,"name":"Rohit Sharma","age":23,"department":"Finance","salary":41837},{"id":318,"name":"Rajesh Kumar","age":32,"department":"Finance","salary":38733},{"id":319,"name":"Priya Kapoor","age":34,"department":"HR","salary":49350},{"id":320,"name":"Kajal Sharma","age":27,"department":"Sales","salary":27660},{"id":321,"name":"Meena Jain","age":28,"department":"Marketing","salary":30711},{"id":322,"name":"Meena Reddy","age":23,"department":"Marketing","salary":50131},{"id":323,"name":"Meena Reddy","age":24,"department":"Marketing","salary":24624},{"id":324,"name":"Varun Verma","age":24,"department":"HR","salary":29572},{"id":325,"name":"Ravi Mehta","age":33,"department":"HR","salary":33295},{"id":326,"name":"Simran Mehta","age":33,"department":"IT","salary":45877},{"id":327,"name":"Neha Mehta","age":31,"department":"IT","salary":46815},{"id":328,"name":"Anjali Sharma","age":34,"department":"IT","salary":36572},{"id":329,"name":"Neha Mehta","age":37,"department":"Marketing","salary":57517},{"id":330,"name":"Aditya Verma","age":38,"department":"Finance","salary":29851},{"id":331,"name":"Payal Reddy","age":30,"department":"Sales","salary":40921},{"id":332,"name":"Kajal Yadav","age":26,"department":"HR","salary":29039},{"id":333,"name":"Komal Singh","age":31,"department":"IT","salary":35138},{"id":334,"name":"Deepak Mehta","age":40,"department":"IT","salary":20489},{"id":335,"name":"Aditya Yadav","age":26,"department":"IT","salary":20531},{"id":336,"name":"Payal Reddy","age":35,"department":"HR","salary":38648},{"id":337,"name":"Komal Verma","age":33,"department":"Sales","salary":58712},{"id":338,"name":"Manish Jain","age":32,"department":"Finance","salary":23139},{"id":339,"name":"Vikas Singh","age":37,"department":"Marketing","salary":26855},{"id":340,"name":"Payal Singh","age":39,"department":"Marketing","salary":28675},{"id":341,"name":"Deepak Jain","age":24,"department":"HR","salary":35876},{"id":342,"name":"Priya Sharma","age":40,"department":"Sales","salary":32123},{"id":343,"name":"Sonal Jain","age":40,"department":"Sales","salary":25176},{"id":344,"name":"Rajesh Sharma","age":32,"department":"Marketing","salary":20282},{"id":345,"name":"Ravi Yadav","age":39,"department":"Finance","salary":51461},{"id":346,"name":"Pooja Kapoor","age":32,"department":"Finance","salary":41717},{"id":347,"name":"Rahul Yadav","age":28,"department":"Sales","salary":21151},{"id":348,"name":"Abhishek Verma","age":24,"department":"Finance","salary":22773},{"id":349,"name":"Kajal Sharma","age":27,"department":"Marketing","salary":54653},{"id":350,"name":"Pooja Jain","age":30,"department":"Marketing","salary":39410},{"id":351,"name":"Karan Mehta","age":33,"department":"Finance","salary":25258},{"id":352,"name":"Tanvi Mehta","age":24,"department":"HR","salary":58153},{"id":353,"name":"Nisha Singh","age":30,"department":"IT","salary":40225},{"id":354,"name":"Priya Yadav","age":39,"department":"Sales","salary":40696},{"id":355,"name":"Divya Reddy","age":24,"department":"HR","salary":58401},{"id":356,"name":"Divya Gupta","age":25,"department":"Marketing","salary":53316},{"id":357,"name":"Arjun Kumar","age":39,"department":"Sales","salary":37471},{"id":358,"name":"Tanvi Verma","age":34,"department":"Marketing","salary":39736},{"id":359,"name":"Tanvi Reddy","age":27,"department":"Marketing","salary":34781},{"id":360,"name":"Manish Gupta","age":25,"department":"IT","salary":33640},{"id":361,"name":"Priya Kumar","age":31,"department":"HR","salary":51495},{"id":362,"name":"Divya Kapoor","age":38,"department":"IT","salary":43481},{"id":363,"name":"Tanvi Mehta","age":36,"department":"Finance","salary":59427},{"id":364,"name":"Varun Gupta","age":32,"department":"HR","salary":41687},{"id":365,"name":"Aditya Kumar","age":30,"department":"HR","salary":59094},{"id":366,"name":"Arjun Singh","age":27,"department":"Finance","salary":34090},{"id":367,"name":"Tanvi Reddy","age":37,"department":"Sales","salary":33163},{"id":368,"name":"Deepak Sharma","age":26,"department":"HR","salary":55075},{"id":369,"name":"Ashish Reddy","age":35,"department":"Finance","salary":25083},{"id":370,"name":"Kajal Sharma","age":29,"department":"IT","salary":28181},{"id":371,"name":"Manish Kumar","age":33,"department":"HR","salary":43833},{"id":372,"name":"Aditya Yadav","age":34,"department":"HR","salary":42547},{"id":373,"name":"Ravi Reddy","age":35,"department":"Sales","salary":59714},{"id":374,"name":"Varun Verma","age":29,"department":"IT","salary":48405},{"id":375,"name":"Aditya Kapoor","age":26,"department":"HR","salary":48364},{"id":376,"name":"Rajesh Jain","age":31,"department":"Marketing","salary":22958},{"id":377,"name":"Vikas Singh","age":28,"department":"HR","salary":45701},{"id":378,"name":"Nisha Yadav","age":37,"department":"Sales","salary":50585},{"id":379,"name":"Karan Sharma","age":40,"department":"Marketing","salary":36626},{"id":380,"name":"Divya Jain","age":31,"department":"Marketing","salary":22812},{"id":381,"name":"Nisha Kapoor","age":39,"department":"Marketing","salary":40525},{"id":382,"name":"Karan Singh","age":30,"department":"IT","salary":44401},{"id":383,"name":"Pooja Singh","age":27,"department":"IT","salary":28327},{"id":384,"name":"Neha Singh","age":34,"department":"Finance","salary":55290},{"id":385,"name":"Anjali Kapoor","age":32,"department":"HR","salary":57553},{"id":386,"name":"Sneha Singh","age":30,"department":"Marketing","salary":28890},{"id":387,"name":"Vikas Sharma","age":26,"department":"Sales","salary":40357},{"id":388,"name":"Pooja Reddy","age":26,"department":"IT","salary":40974},{"id":389,"name":"Ravi Mehta","age":38,"department":"IT","salary":47540},{"id":390,"name":"Komal Verma","age":24,"department":"Finance","salary":39901},{"id":391,"name":"Deepak Kumar","age":36,"department":"HR","salary":35640},{"id":392,"name":"Arjun Kumar","age":32,"department":"Marketing","salary":51829},{"id":393,"name":"Karan Gupta","age":35,"department":"IT","salary":39359},{"id":394,"name":"Priya Sharma","age":30,"department":"Marketing","salary":35149},{"id":395,"name":"Komal Sharma","age":35,"department":"Marketing","salary":20019},{"id":396,"name":"Neha Kumar","age":36,"department":"IT","salary":38074},{"id":397,"name":"Ravi Sharma","age":28,"department":"IT","salary":52780},{"id":398,"name":"Payal Singh","age":29,"department":"IT","salary":28602},{"id":399,"name":"Tanvi Reddy","age":30,"department":"HR","salary":43471},{"id":400,"name":"Kajal Yadav","age":30,"department":"Sales","salary":57932},{"id":401,"name":"Ritika Reddy","age":36,"department":"Marketing","salary":50057},{"id":402,"name":"Rahul Sharma","age":30,"department":"Sales","salary":24858},{"id":403,"name":"Varun Jain","age":37,"department":"IT","salary":23579},{"id":404,"name":"Abhishek Jain","age":34,"department":"IT","salary":23479},{"id":405,"name":"Sandeep Gupta","age":23,"department":"Marketing","salary":44663},{"id":406,"name":"Simran Reddy","age":35,"department":"Marketing","salary":38371},{"id":407,"name":"Vikas Singh","age":31,"department":"Sales","salary":50121},{"id":408,"name":"Pooja Kapoor","age":29,"department":"Marketing","salary":56981},{"id":409,"name":"Ravi Mehta","age":24,"department":"Finance","salary":55504},{"id":410,"name":"Abhishek Gupta","age":24,"department":"Sales","salary":38175},{"id":411,"name":"Kajal Sharma","age":39,"department":"IT","salary":49998},{"id":412,"name":"Simran Singh","age":23,"department":"Sales","salary":34898},{"id":413,"name":"Sonal Kumar","age":25,"department":"HR","salary":49263},{"id":414,"name":"Payal Reddy","age":28,"department":"IT","salary":56324},{"id":415,"name":"Ashish Jain","age":37,"department":"IT","salary":26157},{"id":416,"name":"Ashish Singh","age":36,"department":"Sales","salary":25167},{"id":417,"name":"Tanvi Singh","age":38,"department":"Finance","salary":51976},{"id":418,"name":"Abhishek Sharma","age":31,"department":"Finance","salary":43906},{"id":419,"name":"Komal Gupta","age":23,"department":"Sales","salary":21981},{"id":420,"name":"Meena Verma","age":29,"department":"IT","salary":48470},{"id":421,"name":"Kajal Yadav","age":24,"department":"IT","salary":25068},{"id":422,"name":"Nisha Kapoor","age":29,"department":"Sales","salary":36261},{"id":423,"name":"Payal Sharma","age":25,"department":"Finance","salary":37001},{"id":424,"name":"Pooja Yadav","age":27,"department":"IT","salary":28169},{"id":425,"name":"Rahul Yadav","age":24,"department":"Sales","salary":42478},{"id":426,"name":"Kajal Sharma","age":31,"department":"Finance","salary":57120},{"id":427,"name":"Kajal Reddy","age":38,"department":"HR","salary":53041},{"id":428,"name":"Abhishek Gupta","age":34,"department":"Sales","salary":43779},{"id":429,"name":"Sandeep Kapoor","age":26,"department":"IT","salary":47616},{"id":430,"name":"Kajal Yadav","age":38,"department":"Finance","salary":49235},{"id":431,"name":"Ashish Sharma","age":35,"department":"Finance","salary":57426},{"id":432,"name":"Pooja Yadav","age":23,"department":"HR","salary":33037},{"id":433,"name":"Vikas Yadav","age":23,"department":"Finance","salary":43561},{"id":434,"name":"Pooja Gupta","age":37,"department":"Sales","salary":54707},{"id":435,"name":"Arjun Sharma","age":32,"department":"Marketing","salary":31618},{"id":436,"name":"Anjali Kumar","age":33,"department":"Sales","salary":41875},{"id":437,"name":"Ritika Reddy","age":24,"department":"Marketing","salary":28366},{"id":438,"name":"Sandeep Singh","age":39,"department":"Marketing","salary":55798},{"id":439,"name":"Ritika Reddy","age":31,"department":"Finance","salary":27107},{"id":440,"name":"Komal Verma","age":29,"department":"Marketing","salary":27844},{"id":441,"name":"Payal Singh","age":40,"department":"HR","salary":34377},{"id":442,"name":"Neha Gupta","age":37,"department":"Marketing","salary":23279},{"id":443,"name":"Aditya Gupta","age":30,"department":"HR","salary":35587},{"id":444,"name":"Tanvi Jain","age":40,"department":"IT","salary":50282},{"id":445,"name":"Nisha Gupta","age":26,"department":"Sales","salary":23189},{"id":446,"name":"Neha Kumar","age":26,"department":"IT","salary":40348},{"id":447,"name":"Ashish Kumar","age":37,"department":"Sales","salary":32575},{"id":448,"name":"Arjun Singh","age":37,"department":"IT","salary":54116},{"id":449,"name":"Ritika Sharma","age":25,"department":"IT","salary":45738},{"id":450,"name":"Rajesh Jain","age":35,"department":"Sales","salary":30350},{"id":451,"name":"Sneha Kapoor","age":27,"department":"Marketing","salary":48425},{"id":452,"name":"Karan Mehta","age":27,"department":"Marketing","salary":53168},{"id":453,"name":"Simran Mehta","age":36,"department":"Marketing","salary":57744},{"id":454,"name":"Rahul Singh","age":28,"department":"HR","salary":54484},{"id":455,"name":"Sonal Mehta","age":36,"department":"HR","salary":21905},{"id":456,"name":"Pooja Jain","age":40,"department":"HR","salary":40078},{"id":457,"name":"Rajesh Gupta","age":25,"department":"IT","salary":55832},{"id":458,"name":"Rahul Mehta","age":34,"department":"HR","salary":56305},{"id":459,"name":"Aditya Yadav","age":28,"department":"IT","salary":32023},{"id":460,"name":"Rohit Reddy","age":29,"department":"HR","salary":50990},{"id":461,"name":"Nisha Kapoor","age":26,"department":"IT","salary":57739},{"id":462,"name":"Kajal Gupta","age":37,"department":"Marketing","salary":27121},{"id":463,"name":"Payal Singh","age":40,"department":"IT","salary":35037},{"id":464,"name":"Aman Mehta","age":28,"department":"Sales","salary":33650},{"id":465,"name":"Aditya Verma","age":26,"department":"Finance","salary":40875},{"id":466,"name":"Varun Sharma","age":24,"department":"Marketing","salary":21566},{"id":467,"name":"Varun Sharma","age":23,"department":"IT","salary":26037},{"id":468,"name":"Rohit Verma","age":34,"department":"Sales","salary":39280},{"id":469,"name":"Ashish Verma","age":25,"department":"HR","salary":53510},{"id":470,"name":"Rajesh Kumar","age":40,"department":"Sales","salary":30538},{"id":471,"name":"Karan Gupta","age":30,"department":"HR","salary":29114},{"id":472,"name":"Meena Sharma","age":40,"department":"Sales","salary":58065},{"id":473,"name":"Sneha Yadav","age":36,"department":"HR","salary":20477},{"id":474,"name":"Karan Reddy","age":24,"department":"Finance","salary":44605},{"id":475,"name":"Sonal Kumar","age":39,"department":"Finance","salary":49370},{"id":476,"name":"Tanvi Sharma","age":34,"department":"Sales","salary":48053},{"id":477,"name":"Ravi Gupta","age":26,"department":"HR","salary":25511},{"id":478,"name":"Manish Jain","age":22,"department":"IT","salary":54278},{"id":479,"name":"Divya Singh","age":23,"department":"Finance","salary":47728},{"id":480,"name":"Ritika Verma","age":30,"department":"Marketing","salary":40404},{"id":481,"name":"Simran Sharma","age":30,"department":"IT","salary":58213},{"id":482,"name":"Neha Yadav","age":36,"department":"Marketing","salary":43042},{"id":483,"name":"Ravi Reddy","age":39,"department":"Sales","salary":29851},{"id":484,"name":"Anjali Reddy","age":34,"department":"Marketing","salary":38337},{"id":485,"name":"Divya Jain","age":36,"department":"Finance","salary":40318},{"id":486,"name":"Meena Singh","age":25,"department":"Marketing","salary":43136},{"id":487,"name":"Rohit Kumar","age":30,"department":"Finance","salary":26387},{"id":488,"name":"Rahul Yadav","age":31,"department":"Finance","salary":51959},{"id":489,"name":"Priya Yadav","age":33,"department":"HR","salary":41262},{"id":490,"name":"Arjun Reddy","age":30,"department":"Finance","salary":31076},{"id":491,"name":"Arjun Verma","age":28,"department":"IT","salary":34209},{"id":492,"name":"Ravi Yadav","age":32,"department":"Marketing","salary":43817},{"id":493,"name":"Karan Sharma","age":31,"department":"Marketing","salary":42459},{"id":494,"name":"Rohit Sharma","age":37,"department":"HR","salary":28829},{"id":495,"name":"Sneha Sharma","age":29,"department":"Sales","salary":35115},{"id":496,"name":"Ravi Mehta","age":30,"department":"HR","salary":44349},{"id":497,"name":"Manish Kapoor","age":32,"department":"Marketing","salary":51920},{"id":498,"name":"Meena Gupta","age":25,"department":"Finance","salary":56801},{"id":499,"name":"Varun Jain","age":34,"department":"HR","salary":20608},{"id":500,"name":"Anjali Reddy","age":34,"department":"Sales","salary":22310},{"id":501,"name":"Meena Kapoor","age":31,"department":"Marketing","salary":53121},{"id":502,"name":"Sonal Sharma","age":39,"department":"Marketing","salary":54008},{"id":503,"name":"Vikas Yadav","age":22,"department":"Finance","salary":44768},{"id":504,"name":"Arjun Jain","age":26,"department":"IT","salary":26607},{"id":505,"name":"Rohit Yadav","age":30,"department":"Marketing","salary":32177},{"id":506,"name":"Priya Verma","age":34,"department":"Finance","salary":58386},{"id":507,"name":"Kajal Yadav","age":40,"department":"Finance","salary":28781},{"id":508,"name":"Manish Reddy","age":39,"department":"Marketing","salary":52224},{"id":509,"name":"Varun Kapoor","age":35,"department":"HR","salary":43204},{"id":510,"name":"Pooja Verma","age":36,"department":"Sales","salary":26505},{"id":511,"name":"Ravi Kumar","age":25,"department":"Sales","salary":55192},{"id":512,"name":"Meena Reddy","age":39,"department":"Finance","salary":57033},{"id":513,"name":"Rahul Reddy","age":24,"department":"Finance","salary":52217},{"id":514,"name":"Simran Verma","age":31,"department":"Marketing","salary":43514},{"id":515,"name":"Payal Jain","age":37,"department":"HR","salary":25061},{"id":516,"name":"Arjun Gupta","age":32,"department":"IT","salary":41324},{"id":517,"name":"Manish Gupta","age":26,"department":"Sales","salary":58841},{"id":518,"name":"Aman Mehta","age":31,"department":"IT","salary":48694},{"id":519,"name":"Kajal Yadav","age":25,"department":"Marketing","salary":43550},{"id":520,"name":"Varun Singh","age":25,"department":"Finance","salary":33942},{"id":521,"name":"Sonal Singh","age":27,"department":"Marketing","salary":25389},{"id":522,"name":"Sneha Reddy","age":36,"department":"IT","salary":32322},{"id":523,"name":"Ravi Mehta","age":29,"department":"HR","salary":33176},{"id":524,"name":"Komal Kapoor","age":38,"department":"HR","salary":30018},{"id":525,"name":"Manish Yadav","age":25,"department":"HR","salary":49381},{"id":526,"name":"Tanvi Kumar","age":26,"department":"IT","salary":23828},{"id":527,"name":"Sandeep Kumar","age":28,"department":"IT","salary":59653},{"id":528,"name":"Payal Gupta","age":34,"department":"Finance","salary":49856},{"id":529,"name":"Payal Mehta","age":26,"department":"Sales","salary":21279},{"id":530,"name":"Sneha Kapoor","age":27,"department":"Finance","salary":34605},{"id":531,"name":"Arjun Gupta","age":27,"department":"Sales","salary":51823},{"id":532,"name":"Meena Kumar","age":40,"department":"Sales","salary":39374},{"id":533,"name":"Varun Verma","age":28,"department":"HR","salary":35911},{"id":534,"name":"Rohit Sharma","age":25,"department":"HR","salary":31182},{"id":535,"name":"Ashish Verma","age":35,"department":"Finance","salary":36655},{"id":536,"name":"Priya Gupta","age":37,"department":"Marketing","salary":52196},{"id":537,"name":"Ritika Gupta","age":35,"department":"IT","salary":23205},{"id":538,"name":"Divya Singh","age":25,"department":"Sales","salary":38647},{"id":539,"name":"Rahul Kumar","age":37,"department":"Marketing","salary":36143},{"id":540,"name":"Ashish Yadav","age":23,"department":"IT","salary":51341},{"id":541,"name":"Ashish Reddy","age":29,"department":"Sales","salary":26805},{"id":542,"name":"Deepak Reddy","age":31,"department":"Marketing","salary":30160},{"id":543,"name":"Ritika Mehta","age":28,"department":"Sales","salary":32412},{"id":544,"name":"Meena Yadav","age":27,"department":"Finance","salary":39289},{"id":545,"name":"Divya Kapoor","age":38,"department":"Finance","salary":32026},{"id":546,"name":"Aman Yadav","age":23,"department":"Finance","salary":35247},{"id":547,"name":"Divya Gupta","age":24,"department":"IT","salary":59705},{"id":548,"name":"Karan Sharma","age":35,"department":"Marketing","salary":48929},{"id":549,"name":"Sneha Reddy","age":29,"department":"HR","salary":44551},{"id":550,"name":"Sandeep Kapoor","age":35,"department":"HR","salary":54570},{"id":551,"name":"Karan Gupta","age":33,"department":"IT","salary":46769},{"id":552,"name":"Ashish Yadav","age":40,"department":"Marketing","salary":47985},{"id":553,"name":"Sneha Yadav","age":30,"department":"IT","salary":29333},{"id":554,"name":"Neha Gupta","age":29,"department":"HR","salary":34812},{"id":555,"name":"Payal Jain","age":34,"department":"IT","salary":47717},{"id":556,"name":"Kajal Gupta","age":36,"department":"Marketing","salary":47756},{"id":557,"name":"Priya Reddy","age":39,"department":"IT","salary":44229},{"id":558,"name":"Kajal Gupta","age":31,"department":"Sales","salary":30129},{"id":559,"name":"Rahul Jain","age":39,"department":"Marketing","salary":47729},{"id":560,"name":"Rajesh Jain","age":29,"department":"Sales","salary":36380},{"id":561,"name":"Payal Jain","age":27,"department":"Finance","salary":36694},{"id":562,"name":"Manish Singh","age":25,"department":"IT","salary":46833},{"id":563,"name":"Simran Mehta","age":40,"department":"Sales","salary":59492},{"id":564,"name":"Karan Kapoor","age":40,"department":"Finance","salary":23828},{"id":565,"name":"Anjali Jain","age":36,"department":"HR","salary":42539},{"id":566,"name":"Anjali Jain","age":35,"department":"IT","salary":59524},{"id":567,"name":"Tanvi Gupta","age":24,"department":"Sales","salary":31914},{"id":568,"name":"Meena Kapoor","age":32,"department":"Finance","salary":35350},{"id":569,"name":"Anjali Verma","age":23,"department":"Sales","salary":35992},{"id":570,"name":"Tanvi Singh","age":22,"department":"HR","salary":44190},{"id":571,"name":"Sneha Verma","age":25,"department":"HR","salary":26146},{"id":572,"name":"Komal Kapoor","age":33,"department":"HR","salary":32560},{"id":573,"name":"Karan Jain","age":23,"department":"Finance","salary":37035},{"id":574,"name":"Rahul Kumar","age":29,"department":"HR","salary":30506},{"id":575,"name":"Ritika Kapoor","age":35,"department":"Finance","salary":40459},{"id":576,"name":"Arjun Mehta","age":29,"department":"Marketing","salary":27437},{"id":577,"name":"Arjun Jain","age":34,"department":"Sales","salary":34898},{"id":578,"name":"Priya Yadav","age":29,"department":"Sales","salary":31506},{"id":579,"name":"Neha Mehta","age":35,"department":"Finance","salary":50381},{"id":580,"name":"Priya Singh","age":30,"department":"IT","salary":29351},{"id":581,"name":"Vikas Gupta","age":35,"department":"Finance","salary":22595},{"id":582,"name":"Rohit Kumar","age":30,"department":"Marketing","salary":32029},{"id":583,"name":"Sneha Gupta","age":25,"department":"Finance","salary":48373},{"id":584,"name":"Rahul Kumar","age":38,"department":"Finance","salary":51292},{"id":585,"name":"Kajal Kapoor","age":26,"department":"Sales","salary":20976},{"id":586,"name":"Abhishek Singh","age":36,"department":"IT","salary":52123},{"id":587,"name":"Ashish Yadav","age":28,"department":"Marketing","salary":32614},{"id":588,"name":"Arjun Yadav","age":24,"department":"Finance","salary":42228},{"id":589,"name":"Aditya Sharma","age":38,"department":"Sales","salary":24239},{"id":590,"name":"Tanvi Mehta","age":31,"department":"Marketing","salary":55403},{"id":591,"name":"Nisha Mehta","age":38,"department":"Finance","salary":21949},{"id":592,"name":"Aman Kapoor","age":37,"department":"Sales","salary":21595},{"id":593,"name":"Divya Jain","age":39,"department":"Marketing","salary":33063},{"id":594,"name":"Sneha Singh","age":22,"department":"Finance","salary":38072},{"id":595,"name":"Rajesh Reddy","age":28,"department":"Finance","salary":49938},{"id":596,"name":"Payal Mehta","age":25,"department":"Sales","salary":53597},{"id":597,"name":"Rahul Reddy","age":23,"department":"IT","salary":23870},{"id":598,"name":"Rohit Sharma","age":37,"department":"Sales","salary":40932},{"id":599,"name":"Rahul Singh","age":35,"department":"Sales","salary":53297},{"id":600,"name":"Simran Mehta","age":39,"department":"Finance","salary":21102}];
+
+let employees = JSON.parse(JSON.stringify(RAW_DATA));
+let currentView = 'employees';
+let currentDeptFilter = '';
+let searchQ = '';
+let sortCol = 'id';
+let sortDir = 1;
+let page = 1;
+const PAGE_SIZE = 20;
+let editingId = null;
+let deleteTarget = null;
+
+function fmt(n) { return '₹' + n.toLocaleString('en-IN'); }
+function fmtK(n) { return '₹' + (n/1000).toFixed(1) + 'K'; }
+
+function getFiltered() {
+  let d = employees;
+  if (currentDeptFilter) d = d.filter(e => e.department === currentDeptFilter);
+  if (searchQ) {
+    const q = searchQ.toLowerCase();
+    d = d.filter(e => e.name.toLowerCase().includes(q) || String(e.id).includes(q) || e.department.toLowerCase().includes(q));
+  }
+  d = [...d].sort((a, b) => {
+    let av = a[sortCol], bv = b[sortCol];
+    if (typeof av === 'string') av = av.toLowerCase(), bv = bv.toLowerCase();
+    return av < bv ? -sortDir : av > bv ? sortDir : 0;
+  });
+  return d;
+}
+
+function updateHeader() {
+  const total = employees.length;
+  const avg = Math.round(employees.reduce((s, e) => s + e.salary, 0) / total);
+  document.getElementById('hTotal').textContent = total;
+  document.getElementById('hAvgSal').textContent = fmtK(avg);
+  document.getElementById('sideTotal').textContent = total;
+  ['IT','Sales','HR','Finance','Marketing'].forEach(d => {
+    const el = document.getElementById('cnt-' + d);
+    if (el) el.textContent = employees.filter(e => e.department === d).length;
+  });
+}
+
+function switchView(v) {
+  currentView = v;
+  document.querySelectorAll('.nav-btn[id^="nav-"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('nav-' + v).classList.add('active');
+  render();
+}
+
+function filterByDept(d) {
+  currentDeptFilter = d;
+  page = 1;
+  if (currentView !== 'employees') switchView('employees');
+  else render();
+  document.querySelectorAll('.nav-btn[id^="dept-"]').forEach(b => b.classList.remove('active'));
+  document.getElementById('dept-' + (d || 'All')).classList.add('active');
+}
+
+function sortBy(col) {
+  if (sortCol === col) sortDir *= -1;
+  else { sortCol = col; sortDir = 1; }
+  render();
+}
+
+function render() {
+  if (currentView === 'analytics') { renderAnalytics(); return; }
+  const filtered = getFiltered();
+  const total = filtered.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  if (page > totalPages) page = totalPages;
+  const slice = filtered.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+  const avgSal = employees.length ? Math.round(employees.reduce((s,e) => s+e.salary, 0) / employees.length) : 0;
+  const maxSal = employees.length ? Math.max(...employees.map(e => e.salary)) : 0;
+  const depts = [...new Set(employees.map(e => e.department))].length;
+
+  const si = col => {
+    const arrow = sortCol === col ? (sortDir === 1 ? '↑' : '↓') : '↕';
+    return `<span class="sort-icon">${arrow}</span>`;
+  };
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="stats-grid">
+      <div class="stat-card blue">
+        <div class="stat-label">Total Employees</div>
+        <div class="stat-value">${employees.length}</div>
+        <div class="stat-sub">${depts} departments</div>
+      </div>
+      <div class="stat-card green">
+        <div class="stat-label">Average Salary</div>
+        <div class="stat-value">${fmtK(avgSal)}</div>
+        <div class="stat-sub">per employee</div>
+      </div>
+      <div class="stat-card purple">
+        <div class="stat-label">Highest Salary</div>
+        <div class="stat-value">${fmtK(maxSal)}</div>
+        <div class="stat-sub">${employees.find(e=>e.salary===maxSal)?.name||''}</div>
+      </div>
+      <div class="stat-card amber">
+        <div class="stat-label">Showing</div>
+        <div class="stat-value">${total}</div>
+        <div class="stat-sub">${currentDeptFilter || 'All departments'}</div>
+      </div>
+    </div>
+    <div class="toolbar">
+      <div class="search-wrap">
+        <span class="search-icon">🔍</span>
+        <input type="text" id="searchInput" placeholder="Search by name, ID or department…" value="${searchQ}" oninput="onSearch(this.value)" />
+      </div>
+      <select onchange="filterByDept(this.value)" id="deptSelect">
+        <option value="" ${!currentDeptFilter?'selected':''}>All Departments</option>
+        <option value="IT" ${currentDeptFilter==='IT'?'selected':''}>IT</option>
+        <option value="Sales" ${currentDeptFilter==='Sales'?'selected':''}>Sales</option>
+        <option value="HR" ${currentDeptFilter==='HR'?'selected':''}>HR</option>
+        <option value="Finance" ${currentDeptFilter==='Finance'?'selected':''}>Finance</option>
+        <option value="Marketing" ${currentDeptFilter==='Marketing'?'selected':''}>Marketing</option>
+      </select>
+      <button class="btn btn-primary" onclick="openAddModal()">＋ Add Employee</button>
+    </div>
+    <div class="table-wrap">
+      ${slice.length === 0 ? `<div class="empty-state"><div class="icon">🔍</div><p>No employees found</p></div>` : `
+      <table>
+        <thead><tr>
+          <th onclick="sortBy('id')" class="${sortCol==='id'?'sorted':''}">ID ${si('id')}</th>
+          <th onclick="sortBy('name')" class="${sortCol==='name'?'sorted':''}">Name ${si('name')}</th>
+          <th onclick="sortBy('age')" class="${sortCol==='age'?'sorted':''}">Age ${si('age')}</th>
+          <th onclick="sortBy('department')" class="${sortCol==='department'?'sorted':''}">Department ${si('department')}</th>
+          <th onclick="sortBy('salary')" class="${sortCol==='salary'?'sorted':''}">Salary ${si('salary')}</th>
+          <th>Actions</th>
+        </tr></thead>
+        <tbody>${slice.map(e => `
+          <tr>
+            <td><span class="emp-id">#${e.id}</span></td>
+            <td><span class="emp-name">${e.name}</span></td>
+            <td><span class="emp-age">${e.age}</span></td>
+            <td><span class="dept-tag dept-${e.department}">${e.department}</span></td>
+            <td><span class="salary">${fmt(e.salary)}</span></td>
+            <td><div class="action-btns">
+              <button class="icon-btn" onclick="openEditModal(${e.id})" title="Edit">✏️</button>
+              <button class="icon-btn del" onclick="openDelModal(${e.id})" title="Delete">🗑️</button>
+            </div></td>
+          </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="pagination">
+        <span>Showing ${((page-1)*PAGE_SIZE)+1}–${Math.min(page*PAGE_SIZE, total)} of ${total}</span>
+        <div class="page-btns">
+          <button class="page-btn" onclick="goPage(1)" ${page===1?'disabled':''}>«</button>
+          <button class="page-btn" onclick="goPage(${page-1})" ${page===1?'disabled':''}>‹</button>
+          ${Array.from({length: Math.min(5, totalPages)}, (_,i) => {
+            let p = Math.max(1, Math.min(page - 2 + i, totalPages - 4 + i));
+            p = Math.max(1, Math.min(p, totalPages));
+            return `<button class="page-btn ${p===page?'active':''}" onclick="goPage(${p})">${p}</button>`;
+          }).join('')}
+          <button class="page-btn" onclick="goPage(${page+1})" ${page===totalPages?'disabled':''}>›</button>
+          <button class="page-btn" onclick="goPage(${totalPages})" ${page===totalPages?'disabled':''}>»</button>
+        </div>
+      </div>`}
+    </div>
+  `;
+}
+
+function renderAnalytics() {
+  const depts = ['IT','Sales','HR','Finance','Marketing'];
+  const colors = { IT: '#4f8ef7', Sales: '#2dd4a0', HR: '#b06ef7', Finance: '#f5a623', Marketing: '#f75f9f' };
+  const dCounts = {}, dSalaries = {};
+  depts.forEach(d => { dCounts[d] = 0; dSalaries[d] = 0; });
+  employees.forEach(e => { dCounts[e.department]++; dSalaries[e.department] += e.salary; });
+  const maxCount = Math.max(...Object.values(dCounts));
+  const maxAvgSal = Math.max(...depts.map(d => dSalaries[d] / dCounts[d]));
+
+  const ageGroups = { '22-25': 0, '26-30': 0, '31-35': 0, '36-40': 0 };
+  employees.forEach(e => {
+    if (e.age <= 25) ageGroups['22-25']++;
+    else if (e.age <= 30) ageGroups['26-30']++;
+    else if (e.age <= 35) ageGroups['31-35']++;
+    else ageGroups['36-40']++;
+  });
+  const maxAge = Math.max(...Object.values(ageGroups));
+
+  const salBrackets = { '<25K': 0, '25–35K': 0, '35–45K': 0, '45–55K': 0, '>55K': 0 };
+  employees.forEach(e => {
+    if (e.salary < 25000) salBrackets['<25K']++;
+    else if (e.salary < 35000) salBrackets['25–35K']++;
+    else if (e.salary < 45000) salBrackets['35–45K']++;
+    else if (e.salary < 55000) salBrackets['45–55K']++;
+    else salBrackets['>55K']++;
+  });
+  const maxSalB = Math.max(...Object.values(salBrackets));
+
+  document.getElementById('mainContent').innerHTML = `
+    <div class="stats-grid" style="margin-bottom:1.5rem">
+      <div class="stat-card blue"><div class="stat-label">Total Employees</div><div class="stat-value">${employees.length}</div></div>
+      <div class="stat-card green"><div class="stat-label">Avg Salary</div><div class="stat-value">${fmtK(Math.round(employees.reduce((s,e)=>s+e.salary,0)/employees.length))}</div></div>
+      <div class="stat-card purple"><div class="stat-label">Avg Age</div><div class="stat-value">${(employees.reduce((s,e)=>s+e.age,0)/employees.length).toFixed(1)}</div></div>
+      <div class="stat-card amber"><div class="stat-label">Departments</div><div class="stat-value">5</div></div>
+    </div>
+    <div class="analytics-grid">
+      <div class="chart-card">
+        <div class="chart-title">Headcount by Department</div>
+        <div class="bar-group">${depts.map(d => `
+          <div class="bar-row">
+            <span class="bar-label">${d}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(dCounts[d]/maxCount*100).toFixed(1)}%;background:${colors[d]}"></div></div>
+            <span class="bar-val">${dCounts[d]}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Avg Salary by Department</div>
+        <div class="bar-group">${depts.map(d => {
+          const avg = dSalaries[d] / dCounts[d];
+          return `<div class="bar-row">
+            <span class="bar-label">${d}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(avg/maxAvgSal*100).toFixed(1)}%;background:${colors[d]}"></div></div>
+            <span class="bar-val">${fmtK(Math.round(avg))}</span>
+          </div>`;}).join('')}
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Age Distribution</div>
+        <div class="bar-group">${Object.entries(ageGroups).map(([k,v]) => `
+          <div class="bar-row">
+            <span class="bar-label">${k}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(v/maxAge*100).toFixed(1)}%;background:#4f8ef7"></div></div>
+            <span class="bar-val">${v}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Salary Distribution</div>
+        <div class="bar-group">${Object.entries(salBrackets).map(([k,v]) => `
+          <div class="bar-row">
+            <span class="bar-label">${k}</span>
+            <div class="bar-track"><div class="bar-fill" style="width:${(v/maxSalB*100).toFixed(1)}%;background:#2dd4a0"></div></div>
+            <span class="bar-val">${v}</span>
+          </div>`).join('')}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+function onSearch(v) { searchQ = v; page = 1; render(); }
+function goPage(p) { page = p; render(); }
+
+function openAddModal() {
+  editingId = null;
+  document.getElementById('modalTitle').textContent = 'Add Employee';
+  document.getElementById('modalSaveBtn').textContent = 'Save Employee';
+  const nextId = Math.max(...employees.map(e => e.id)) + 1;
+  document.getElementById('fId').value = nextId;
+  document.getElementById('fId').readOnly = false;
+  document.getElementById('fName').value = '';
+  document.getElementById('fAge').value = '';
+  document.getElementById('fDept').value = '';
+  document.getElementById('fSalary').value = '';
+  clearErrors();
+  document.getElementById('empModal').classList.add('open');
+}
+
+function openEditModal(id) {
+  editingId = id;
+  const e = employees.find(x => x.id === id);
+  document.getElementById('modalTitle').textContent = 'Edit Employee';
+  document.getElementById('modalSaveBtn').textContent = 'Update Employee';
+  document.getElementById('fId').value = e.id;
+  document.getElementById('fId').readOnly = true;
+  document.getElementById('fName').value = e.name;
+  document.getElementById('fAge').value = e.age;
+  document.getElementById('fDept').value = e.department;
+  document.getElementById('fSalary').value = e.salary;
+  clearErrors();
+  document.getElementById('empModal').classList.add('open');
+}
+
+function closeModal() { document.getElementById('empModal').classList.remove('open'); }
+
+function clearErrors() {
+  ['Id','Name','Age','Dept','Sal'].forEach(f => {
+    const el = document.getElementById('err'+f);
+    if (el) el.style.display = 'none';
+  });
+}
+
+function saveEmployee() {
+  clearErrors();
+  const id = parseInt(document.getElementById('fId').value);
+  const name = document.getElementById('fName').value.trim();
+  const age = parseInt(document.getElementById('fAge').value);
+  const dept = document.getElementById('fDept').value;
+  const salary = parseInt(document.getElementById('fSalary').value);
+  let valid = true;
+  if (!editingId && employees.find(e => e.id === id)) {
+    document.getElementById('errId').style.display = 'block'; valid = false;
+  }
+  if (!name) { document.getElementById('errName').style.display = 'block'; valid = false; }
+  if (!age || age < 18 || age > 65) { document.getElementById('errAge').style.display = 'block'; valid = false; }
+  if (!dept) { document.getElementById('errDept').style.display = 'block'; valid = false; }
+  if (!salary || salary < 10000) { document.getElementById('errSal').style.display = 'block'; valid = false; }
+  if (!valid) return;
+  if (editingId) {
+    const idx = employees.findIndex(e => e.id === editingId);
+    employees[idx] = { id, name, age, department: dept, salary };
+    toast('Employee updated successfully', 'success');
+  } else {
+    employees.push({ id, name, age, department: dept, salary });
+    toast('Employee added successfully', 'success');
+  }
+  closeModal();
+  updateHeader();
+  render();
+}
+
+function openDelModal(id) {
+  deleteTarget = id;
+  const e = employees.find(x => x.id === id);
+  document.getElementById('delName').textContent = e.name;
+  document.getElementById('delId').textContent = e.id;
+  document.getElementById('delModal').classList.add('open');
+}
+function closeDelModal() { document.getElementById('delModal').classList.remove('open'); }
+function confirmDelete() {
+  employees = employees.filter(e => e.id !== deleteTarget);
+  closeDelModal();
+  toast('Employee deleted', 'error');
+  updateHeader();
+  render();
+}
+
+let toastTimer;
+function toast(msg, type = 'success') {
+  const t = document.getElementById('toast');
+  t.className = 'toast ' + type;
+  document.getElementById('toastMsg').textContent = msg;
+  t.classList.add('show');
+  clearTimeout(toastTimer);
+  toastTimer = setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// Init
+updateHeader();
+render();
+</script>
+</body>
+</html>
