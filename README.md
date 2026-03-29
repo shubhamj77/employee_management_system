@@ -18,14 +18,14 @@ A full-featured web-based dashboard for managing employee records—add, view, e
 
 ## 📸 Screenshots
 <!-- Add screenshots here: Upload images to repo's /images folder, then link like ![Dashboard](/images/dashboard.png) -->
-![Dashboard Preview](images/dashboard.png) <!-- Replace path after uploading -->
+![Dashboard Preview](C:\Users\saura\Pictures\Screenshots) <!-- Replace path after uploading -->
 
 ## 🎮 Quick Demo
 1. Open `index.html` in any browser.
-2. Add employees via the form.
+2.) Add employees via the form.
 3. Search, edit, or delete entries—data persists on refresh!
 
-Live version: [View Demo](https://yourusername.github.io/employee-management-system/)
+Live version: [View Demo](file:///C:/Users/saura/Downloads/employee_management_system.html)
 
 ## 🏗 How to Run Locally
 1. Clone/Download the repo.
